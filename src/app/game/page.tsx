@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import { useState, useEffect } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useRouter } from "next/navigation"
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { createOrFetchUserProfile } from "@/lib/user-profile"
 import Image from "next/image"
+import type { User } from "@supabase/auth-helpers-nextjs"
 
 type Player = {
   name: string
@@ -63,7 +65,7 @@ export default function GamePage() {
   const [isAddingPlayer, setIsAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null) // TODO: Replace 'any' with a proper user type
+  const [user, setUser] = useState<User | null>(null)
   const [throwType, setThrowType] = useState<ThrowType>("single")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [editingPlayer, setEditingPlayer] = useState<{ index: number; name: string } | null>(null)
@@ -530,7 +532,9 @@ export default function GamePage() {
                   <Label>Player Name</Label>
                   <Input
                     value={editingPlayer?.name || ""}
-                    onChange={(e) => setEditingPlayer((prev) => (prev ? { ...prev, name: e.target.value } : null))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEditingPlayer((prev) => (prev ? { ...prev, name: e.target.value } : null))
+                    }
                     className="bg-gray-700"
                   />
                 </div>
@@ -550,7 +554,7 @@ export default function GamePage() {
                 type="text"
                 placeholder="New player name"
                 value={newPlayerName}
-                onChange={(e) => setNewPlayerName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPlayerName(e.target.value)}
                 className="flex-grow bg-gray-700"
               />
               <Button onClick={addPlayer} className="bg-green-600">
