@@ -274,37 +274,6 @@ export default function GamePage() {
     return "No suggestion available"
   }
 
-  const handleThrowSuggestion = (score: number): string => {
-    if (score > 170) return "No checkout"
-    if (score <= 1) return "No checkout"
-
-    const commonCheckouts: Record<number, string> = {
-      170: "T20 T20 Bull",
-      167: "T20 T19 Bull",
-      164: "T20 T18 Bull",
-      161: "T20 T17 Bull",
-      160: "T20 T20 D20",
-      // Add more common checkouts
-    }
-
-    if (commonCheckouts[score]) return commonCheckouts[score]
-
-    if (score <= 40 && score % 2 === 0) {
-      return `D${score / 2}`
-    }
-
-    // For scores 41-170
-    for (let i = 20; i >= 1; i--) {
-      const remaining = score - i * 3
-      if (remaining > 0 && remaining <= 40 && remaining % 2 === 0) {
-        return `T${i} D${remaining / 2}`
-      }
-    }
-
-    // If no specific checkout found, suggest general approach
-    return `Try T20 (${score} remaining)`
-  }
-
   const handleThrow = (dartValue: number) => {
     if (currentThrows.length < 3) {
       const throwValue = dartValue * (throwType === "double" ? 2 : throwType === "triple" ? 3 : 1)
