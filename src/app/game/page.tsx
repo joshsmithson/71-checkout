@@ -542,7 +542,7 @@ export default function GamePage() {
               animate={{ opacity: 1, x: 0 }}
               className="text-lg font-bold"
             >
-              {currentPlayer.name}'s Turn
+              {currentPlayer.name}&apos;s Turn
             </motion.h3>
 
             <div className="flex justify-between mb-2">
