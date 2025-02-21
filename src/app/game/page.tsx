@@ -13,6 +13,7 @@ import LeaderboardHistory from "@/components/leaderboard-history"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { createOrFetchUserProfile } from "@/lib/user-profile"
+import Image from "next/image"
 
 type Player = {
   name: string
@@ -62,14 +63,12 @@ export default function GamePage() {
   const [isAddingPlayer, setIsAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<any>(null) // TODO: Replace 'any' with a proper user type
   const [throwType, setThrowType] = useState<ThrowType>("single")
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [editingPlayer, setEditingPlayer] = useState<{ index: number; name: string } | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
-  const [username, setUsername] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
 
   useEffect(() => {
@@ -474,10 +473,12 @@ export default function GamePage() {
             Logged in as: {userProfile ? userProfile.display_name || userProfile.username : user?.email}
           </div>
           {userProfile?.avatar_url && (
-            <img
+            <Image
               src={userProfile.avatar_url || "/placeholder.svg"}
               alt="User Avatar"
-              className="w-10 h-10 rounded-full mx-auto mt-2"
+              width={40}
+              height={40}
+              className="rounded-full mx-auto mt-2"
             />
           )}
         </CardHeader>
