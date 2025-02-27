@@ -1,34 +1,45 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import type { User } from "@supabase/auth-helpers-nextjs"
 
-export async function createOrFetchUserProfile(user: User) {
+type PlayerStatistics = {
+  user_id: string
+  player_name: string
+  games_played: number
+  games_won: number
+  total_score: number
+  highest_checkout: number
+}
+
+export async function updatePlayerStatistics(stats: PlayerStatistics) {
   const supabase = createClientComponentClient()
 
-  // Try to fetch the existing profile
-  const { data: profile, error: fetchError } = await supabase.from("users").select("*").eq("id", user.id).single()
+  const { data, error } = await supabase
+    .from("player_statistics")
+    .select("*")
+    .eq("user_id", stats.user_id)
+    .eq("player_name", stats.player_name)
+    .single()
 
-  if (fetchError && fetchError.code === "PGRST116") {
-    // Profile doesn't exist, so let's create it
-    const newProfile = {
-      id: user.id,
-      username: user.email?.split("@")[0] || `user_${Math.random().toString(36).substr(2, 9)}`,
-      display_name: user.user_metadata.full_name || user.email?.split("@")[0],
-      avatar_url: user.user_metadata.avatar_url,
-    }
-
-    const { data, error: insertError } = await supabase.from("users").insert(newProfile).select().single()
-
-    if (insertError) {
-      console.error("Error creating user profile:", insertError)
-      throw insertError
-    }
-
-    return data
-  } else if (fetchError) {
-    console.error("Error fetching user profile:", fetchError)
-    throw fetchError
+  if (error && error.code !== "PGRST116") {
+    console.error("Error fetching player statistics:", error)
+    return
   }
 
-  return profile
+  const newStats: PlayerStatistics = data
+    ? {
+        ...data,
+        games_played: data.games_played + stats.games_played,
+        games_won: data.games_won + stats.games_won,
+        total_score: data.total_score + stats.total_score,
+        highest_checkout: Math.max(data.highest_checkout, stats.highest_checkout),
+      }
+    : stats
+
+  const { error: upsertError } = await supabase
+    .from("player_statistics")
+    .upsert(newStats, { onConflict: "user_id,player_name" })
+
+  if (upsertError) {
+    console.error("Error updating player statistics:", upsertError)
+  }
 }
 

@@ -3,14 +3,11 @@
 import { useState, useEffect, useCallback } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
-import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import type { DateRange } from "react-day-picker"
@@ -25,21 +22,13 @@ type GameHistory = {
   username: string
 }
 
-type LeaderboardEntry = {
-  player: string
-  wins: number
-}
-
 interface LeaderboardHistoryProps {
   className?: string
-  refreshTrigger?: number
 }
 
-export default function LeaderboardHistory({ className = "", refreshTrigger = 0 }: LeaderboardHistoryProps) {
+export default function LeaderboardHistory({ className = "" }: LeaderboardHistoryProps) {
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([])
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("leaderboard")
   const supabase = createClientComponentClient()
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [searchUsername, setSearchUsername] = useState<string>("")
@@ -63,7 +52,6 @@ export default function LeaderboardHistory({ className = "", refreshTrigger = 0 
         query = query.eq("user_id", user.id)
       }
 
-      // Add date range filters if set
       if (dateRange?.from) {
         query = query.gte("created_at", dateRange.from.toISOString())
       }
@@ -83,9 +71,7 @@ export default function LeaderboardHistory({ className = "", refreshTrigger = 0 
         username: game.users?.username || "Unknown",
       }))
 
-      console.log("Fetched game history:", formattedData)
       setGameHistory(formattedData)
-      calculateLeaderboard(formattedData)
     } catch (error) {
       console.error("Error in fetchGameHistory:", error)
       toast.error(`Failed to load game history: ${error instanceof Error ? error.message : "Unknown error"}`)
@@ -95,24 +81,8 @@ export default function LeaderboardHistory({ className = "", refreshTrigger = 0 
   }, [supabase, dateRange, currentUsername])
 
   useEffect(() => {
-    console.log("LeaderboardHistory component mounted or dependencies changed")
     fetchGameHistory()
-  }, [fetchGameHistory, refreshTrigger])
-
-  const calculateLeaderboard = (history: GameHistory[]) => {
-    console.log("Calculating leaderboard with history:", history)
-    const winCounts: { [key: string]: number } = {}
-    history.forEach((game) => {
-      if (game.winner) {
-        winCounts[game.winner] = (winCounts[game.winner] || 0) + 1
-      }
-    })
-    const leaderboardData = Object.entries(winCounts)
-      .map(([player, wins]) => ({ player, wins }))
-      .sort((a, b) => b.wins - a.wins)
-    console.log("Calculated leaderboard:", leaderboardData)
-    setLeaderboard(leaderboardData)
-  }
+  }, [fetchGameHistory])
 
   const handleSearch = () => {
     setCurrentUsername(searchUsername)
@@ -130,7 +100,7 @@ export default function LeaderboardHistory({ className = "", refreshTrigger = 0 
   return (
     <Card className={`bg-gray-800 text-white shadow-xl ${className}`}>
       <CardHeader className="border-b border-gray-700">
-        <CardTitle className="text-xl font-bold text-center">Leaderboard & History</CardTitle>
+        <CardTitle className="text-xl font-bold">Game History</CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <div className="mb-4 space-y-2">
@@ -174,75 +144,22 @@ export default function LeaderboardHistory({ className = "", refreshTrigger = 0 
           </Popover>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-700">
-            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-blue-600">
-              Leaderboard
-            </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-blue-600">
-              Game History
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="leaderboard">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key="leaderboard"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-              >
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-gray-700">
-                      <TableHead className="text-white">Player</TableHead>
-                      <TableHead className="text-white">Wins</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leaderboard.map((entry) => (
-                      <TableRow key={entry.player} className="border-gray-700">
-                        <TableCell className="font-medium text-white">{entry.player}</TableCell>
-                        <TableCell className="text-white">{entry.wins}</TableCell>
-                      </TableRow>
-                    ))}
-                    {leaderboard.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={2} className="text-center text-gray-400">
-                          No games played yet
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </motion.div>
-            </AnimatePresence>
-          </TabsContent>
-          <TabsContent value="history">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key="history"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-2"
-              >
-                {gameHistory.map((game) => (
-                  <Card key={game.id} className="bg-gray-700">
-                    <CardContent className="p-3">
-                      <p className="text-sm text-gray-300">{new Date(game.created_at).toLocaleDateString()}</p>
-                      <p className="font-medium">
-                        {game.game_type} - Winner: {game.winner}
-                      </p>
-                      <p className="text-sm text-gray-300">Players: {game.players.join(", ")}</p>
-                      <p className="text-sm text-gray-300">Username: {game.username}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-                {gameHistory.length === 0 && <p className="text-center text-gray-400">No game history available</p>}
-              </motion.div>
-            </AnimatePresence>
-          </TabsContent>
-        </Tabs>
+        <div className="space-y-2">
+          {gameHistory.map((game) => (
+            <Card key={game.id} className="bg-gray-700">
+              <CardContent className="p-3">
+                <p className="text-sm text-gray-300">{new Date(game.created_at).toLocaleDateString()}</p>
+                <p className="font-medium">
+                  {game.game_type} - Winner: {game.winner}
+                </p>
+                <p className="text-sm text-gray-300">Players: {game.players.join(", ")}</p>
+                <p className="text-sm text-gray-300">Username: {game.username}</p>
+              </CardContent>
+            </Card>
+          ))}
+          {gameHistory.length === 0 && <p className="text-center text-gray-400">No game history available</p>}
+        </div>
+
         <Button onClick={fetchGameHistory} className="mt-4 w-full bg-gray-700 hover:bg-gray-600">
           Refresh Data
         </Button>
