@@ -55,37 +55,6 @@ export default function GamePage() {
     getSession()
   }, [supabase, router])
 
-  const startNewGame = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const newSessionId = await createGameSession(user.id, gameType, players);
-      setSessionId(newSessionId);
-    } catch (error) {
-      console.error("Error starting new game:", error);
-      toast.error("Failed to start new game");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-  
-      if (session) {
-        setUser(session.user)
-      } else {
-        router.push("/login")
-      }
-    }
-  
-    getSession()
-  }, [supabase, router])
-
   const handleStartGame = async () => {
     if (!user || players.length === 0) return;
     
@@ -515,11 +484,11 @@ export default function GamePage() {
                 Miss
               </Button>
               <div className={`flex items-center justify-between bg-gray-700 p-3 rounded-md ${isBust ? "border-2 border-red-500" : ""}`}>
-  <span className="font-semibold">Remaining:</span>
-  <span className={`text-xl font-bold ${isBust ? "text-red-500" : ""}`}>
-    {players[currentPlayerIndex].score - throwValues.reduce((sum, value) => sum + value, 0)}
-  </span>
-</div>
+                <span className="font-semibold">Remaining:</span>
+                <span className={`text-xl font-bold ${isBust ? "text-red-500" : ""}`}>
+                  {players[currentPlayerIndex].score - throwValues.reduce((sum, value) => sum + value, 0)}
+                </span>
+              </div>
 
               <div className="flex items-center space-x-2">
                 <Input
@@ -577,4 +546,3 @@ export default function GamePage() {
     </div>
   )
 }
-
