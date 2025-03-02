@@ -26,7 +26,11 @@ const DetailedGameStats: React.FC<DetailedGameStatsProps> = ({ session }) => {
     });
     
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, Array<{
+    turn: number;
+    score: number;
+    throwTotal: number;
+  }>>);
 
   // Calculate statistics
   const playerStats = players.map(player => {

@@ -13,9 +13,10 @@ import DetailedGameStats from "@/components/detailed-game-statistics"
 import { fetchDetailedGameHistory } from "@/lib/gameSessionUtils"
 import type { PlayerStatistics } from "@/types/game"
 import type { GameSession } from "@/lib/gameSessionUtils"
+import type { User } from "@supabase/auth-helpers-nextjs"
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [userStats, setUserStats] = useState<PlayerStatistics | null>(null)
   const [friendStats, setFriendStats] = useState<PlayerStatistics[]>([])
   const [gameHistory, setGameHistory] = useState<GameSession[]>([])
@@ -109,7 +110,9 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold">Profile</h1>
         <Button onClick={() => router.push("/game")}>Back to Game</Button>
       </div>
-
+      <div className="text-sm text-gray-400 mt-2">
+  Logged in as: {user?.email}
+</div>
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>

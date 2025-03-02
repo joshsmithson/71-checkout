@@ -16,7 +16,7 @@ import type { User } from "@supabase/auth-helpers-nextjs"
 import { updatePlayerStatistics } from "@/lib/updatePlayerStatistics"
 import { createGameSession, recordTurn, completeGameSession } from '@/lib/gameSessionUtils';
 import { getCheckoutSuggestions } from "@/lib/checkoutUtils";
-import { GameType, Player, PlayerStatistics, createInitialPlayer } from "@/types/game";
+import { GameType, Player, createInitialPlayer } from "@/types/game";
 
 const initialPlayer = createInitialPlayer();
 
@@ -514,12 +514,12 @@ export default function GamePage() {
               <Button onClick={() => handleThrowInput(0)} className="bg-gray-700 w-full">
                 Miss
               </Button>
-              <div className="flex items-center justify-between bg-gray-700 p-3 rounded-md">
-                <span className="font-semibold">Remaining:</span>
-                <span className="text-xl font-bold">
-                  {players[currentPlayerIndex].score - throwValues.reduce((sum, value) => sum + value, 0)}
-                </span>
-              </div>
+              <div className={`flex items-center justify-between bg-gray-700 p-3 rounded-md ${isBust ? "border-2 border-red-500" : ""}`}>
+  <span className="font-semibold">Remaining:</span>
+  <span className={`text-xl font-bold ${isBust ? "text-red-500" : ""}`}>
+    {players[currentPlayerIndex].score - throwValues.reduce((sum, value) => sum + value, 0)}
+  </span>
+</div>
 
               <div className="flex items-center space-x-2">
                 <Input
